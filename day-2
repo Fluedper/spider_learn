@@ -1,0 +1,47 @@
+urllib 库的使用
+
+
+	1.发送请求
+
+		
+	二.异常处理：
+		urllib的error模块定义了由request模块产生的异常。
+		即：请求中出现异常，request模块会抛出error模块中定义的异常
+
+		1.URLError
+			这个类来自error模块，他继承了OSError类，是error异常模块的基类。	由request模块产生的异常都可以用这个类来解决。
+
+		例子：
+			from urllib import request,error
+			try:
+				response = request.urlopen(url)
+			except error.URLError as e:
+				print(e.reson)
+			这里指出一个URLError的一个reason属性。即返回错误的原因。
+
+		2.HTTPError
+			这个是URLError的一个子类，专门处理HTTP请求错误。
+			属性：
+			code：返回HTTP的状态码（出现问题的状态码，如404，找不到该网页，等等）
+			reason：同父类一个作用
+			headers：返回请求头
+
+		* 一般在写程序的时候，先抛出子类的异常，在抛出父类的异常。
+
+		例子：
+			from urllib import request,error
+			try:
+				response = request.urlopen(url)
+			except error.HTTPError as e:
+				print(e.code,e.reason,e,headers, sep='/n')
+			except error.URLError as e:
+				pritn(e.reason)
+			else:
+				print ('Request successful')
+
+
+	** 判断一个实例是否是哪一种类的方法，  isinstance（）方法
+		isinstance（instance，class）
+			是返回true，不是返回false
+
+		因为e.reason返回的不一定是字符，而有可能是一个对象。所以用这个方法可以更准确的判断异常。
