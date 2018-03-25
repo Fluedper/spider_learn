@@ -1,0 +1,43 @@
+robots协议分析
+
+	
+	1.定义：Robots协议也称作爬虫协议，机器人协议，他的全名叫做网络爬虫排除标准用来告诉爬虫和搜索引擎哪些页面可以抓取，哪些不可以抓取。它通常是叫做robots.txt的文本文件，一般放在网页的根目录下。
+
+	2.原理：当搜索爬虫访问一个站点时，它首先会检查这个站点根目录下是否存在robots.txt文件，如果存在，搜索爬虫会根据其中定义的爬取范围来爬取，如果没有找到这个文件，搜索爬虫便会访问所有可直接访问的页面。
+
+	robots.txt的一个样例
+		User-agent：* ----描述的是爬虫的名称，作用是对该名称的爬虫，规则有效
+		Disallow:/	
+		Allow:/public/	----这两个通常一起使用，禁止爬取哪些网页，和只允许爬取哪些网页
+
+	这是一个实现了对所有搜索爬虫只允许爬取public目录的功能，将上述内容保存成robots.txt文件，放在网站的根目录下，和网站的入口文件（比如index.php,index.html等）放在一起
+
+
+	3.使用robotparser模块解析robots.txt。
+		该模块提供了一个RobotFileParser类，这个类有以下几个常用方法
+
+		1.set_url()：用来设置robots.txt文件的链接，若创建对象时传入了链接，就可以不用这个方法设置了。
+
+		2.read()：读取robots.txt文件并分析，此方法是一个读取和分析的操作，还必须先执行，才能知道后面的判断
+
+		3.parse()：用来解析robots.txt，传入的参数是行的内容。它会按照robots.txt的语法规则来分析这些内容。
+
+		4.can_fetch():能否抓取，传入两个参数（第一个User-agent,第二个是要抓取的URL，返回True和False
+
+		5.mtime()：返回的是上次抓取和分析的时间。
+		6.modified()：将当前时间设置为上次抓取和分析的时间。
+		*这两个方法对与长时间分析和抓取额搜索爬虫是很有必要的，因为你可能需要定期检查来抓取最新的robots.txt
+
+	看例子：
+		#from urllib.request import urlopen
+		from urllib.robotparser import RobotFileParser
+
+		rp = RobotFileParse()
+普通方法解析	rp.set_url('http://www.jianshu.com/robots.txt')
+		rp.read()
+parse方法解析	#rp.parse(urlopen('http://www.jianshu.com/robots.txt').read().decade('utf-8').split('\n')
+		print(rp.can_fetch('*','http://www.jianshu.com/p/b67554025d7d'))
+		print(rp.can_fetch('*','http://www.jianshu.com/search?q=python&page=12"))
+
+		返回结果	True
+				False
