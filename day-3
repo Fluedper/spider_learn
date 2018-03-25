@@ -1,0 +1,103 @@
+
+解析链接
+
+	urllib库中有一个 parse模块，它定义了处理URL的标准接口。
+	如对url各部分进行抽取，合并以及链接转换
+
+
+	一.parse模块中的方法：
+
+	  1.  urlparse() 实现对url的识别和分段。
+
+		from urllib.parse import urlparse
+
+		result = urlparse('http://www,baidu.com/index.html;user?id=5#comment')
+		print(type(result),result)
+
+		结果如下：
+		<class 'urllib.parse.ParseResult'>
+		ParseResult(scheme='http', netloc='www.baidu.com', path='/index.html', params='user', query='id=5', fragment='comment')
+
+		返回的是一个ParseResult类型
+			其属性有：scheme（协议），netloc（域名），path（路径）
+				params,query,frament(都是参数）
+
+		除此之外：
+			urllib.parse.urlparse(urlstring,scheme='',allow_fragments=Ture))
+				
+				urlstring(必填，待解析的url)
+				scheme（默认的协议，即当你在urlstring中没有注明协议的时候，就采用你设置好的默认的协议）
+				allow——fragments（是否允许fragments字段，如果true代表允许，false代表会被忽略，但是他会被解析到path，parameters或者query的一部分。
+
+			***ParseResult实际上是一个元组（tuple），所以可以用索引顺序来索取
+			即result.scheme = result[0]
+	
+	    2.urlunparse()----即url的构造	
+		与urlparse对应，接受的参数是一个可迭代对象，但是它的长度必须是6，否则会抛出参数数量不足或者过多的问题
+		from urllib.parse import urlunparse
+
+		data = ['http','www.baidu.com','index.html','user','id=6','comment']
+		print(urlubparse(data))
+	
+		返回：
+		http://www.baidu.com/index.html;user?id=6#commment
+
+	    3.urlsplit()---切割url
+		返回5个结果，
+			scheme，netloc，path，query,fragments
+		与parse不同，他只返回5个结果，不解析他们，且parse.params会整合到path中
+
+	    4.urlunsplit()---组合url
+		该方法和urlunparse功能差不多，但是它需要传入的可迭代参数的长度必须是5个
+			和split对应
+
+	    5.urljoin()----一种基于base_url的合成url
+		用法：
+		urljoin（base_url,new_url)
+			base_url提供三项内容scheme，netloc,path。如果这三项在new_url里不存在，就予以补充，若存在，则使用new_url不补充。
+
+	    6.urlencode（）
+		此方法在构造get请求参数的时候非常有用，看例子
+		from urllib.parse import urlencode
+
+		params = {
+			'name':'clc'
+			'age': 22
+		}
+		base_url = 'http://www.baidu.com?'
+		url = base_url + urlencode(params)
+		print(url)
+
+		返回结果：
+		http://www.baidu.com?name=clc&age=22
+
+		可以看到params字典对象被urlencode序列化成url的参数了
+
+	    7.parse_qs()
+		有序列化就有反序列化。
+		from urllib.parse import parse_qs
+
+		query = 'name=clc&age=22'
+		print(parse_qs(query))
+		
+		返回：
+		{'name':['clc'],'age':[22]}
+
+	    8.parse_qsl()
+		也是反序列化，将url参数转化成元组[('name','clc'),('age':'22')]
+
+	    9.quote()
+		该方法将内容转化为url编码格式。当url有中文参数时，有时会导致乱码，用此方法可以将中文字符转化为url编码：
+		from urllib.parse import quote
+
+		keyword = '我爱你‘
+		url = 'https://www.baidu.com/s?wd=' + quote(keyword)
+		print(url)
+		
+		返回
+		https://www.baidu.com/s?wd=%E6%88%91%E7%88%B1%E4%BD%A0
+
+	    10.unquote()
+		即反编码，从乱码返回的到中文
+
+
