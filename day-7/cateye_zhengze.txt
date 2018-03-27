@@ -1,0 +1,5 @@
+rank:	<dd>.*?board-index.*?>(.*?)</i>
+
+pic:	<dd>.*?board-index.*?>(.*?)</i>.*?data-src="(.*?)"
+
+name:	<dd>.*?board-index.*?>(.*?)</i>.*?data-src="(.*?)".*?class="name"<a.*?>(.*?)</a>
