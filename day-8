@@ -1,0 +1,122 @@
+
+解析库的使用
+
+
+Xpath:
+
+	就是一个选择器，提供简洁明了的路径表达式
+
+	1.常用规则：
+		nodename :选取此节点的所有子节点
+
+		/ ：从当前节点选取直接子节点
+
+		// ：从当前节点选取子孙节点
+
+		. ：选取当前节点
+
+		.. ：选取当前节点的负节点
+
+		@ ：选取属性
+
+
+	eg： //title[@lang='eng']
+
+		它代表选择所有名称为title，同时属性lang的值为eng的节点
+
+
+	2.运用：
+		lxml库里有etree模块
+		etree模块调用一个HTML类来进行初始化，成功构造一个XPath解析对象。
+		并且还有一个tostring（）方法可以输出修正以后的HTML代码，但结果是bytes类型的，可以再用一个decode（）方法将其转成str类型。
+
+		html = etree.HTML(text)  text是一个html文本，一般是爬来的网页源代码
+		result = etree.tostring(html)
+		result.decode('utf-8')
+
+		另外也可以直接读取文本文件进行解析
+		html = etree.parse('./test.html',etree.HTMLParser())
+
+	3.所有节点
+		我们一般会用//开头的XPath规则来选去所有符合要求的节点。这里以前面的html文本为例，如果要选去所有节点，可以：
+
+	from lxml import etree
+	html = etree.parse('./test.html',etree.HTMLParser())
+	result = html.xpath('//*')
+	print(result)
+
+	若要选去所有的li节点，即使用xpath（//li）调用就可以了
+
+	4.子节点
+	我们通过/或者//即可查找元素的子节点或子孙节点。假如现在想选择li节点的所有直接a子节点，可以：
+	result = html.xpath('//li/a')
+	print(result)
+
+
+	5.父节点
+	查找父节点可以：
+	result = html.xpath('//a[@href="link2.html"]/../@class')
+		选中href属性为link2.html的a节点，然后获取其父节点，再取其中的class属性
+
+		其实除了..(点点）以外还有一种表示父节点的方法：parent::*
+
+	6.属性匹配
+		在选取的时候，我们还可以用@符号进行属性过滤。比如，这里如果要选去class为item-1的li节点，可以：
+
+		result = html.xpath('//li[@class="item-0"]')
+
+	7.文本获取
+		在xpath（）方法获取节点中的文本，接下来尝试获取前面li节点中a节点的文本，如下：
+		result = html.xpath('//li[@class="item-0"]/a/text()')	
+		一般选去到特定的子孙节点，然后在调用text（）方法获取其内部文本。这样可以抱枕干活去的结果是整洁的。
+
+	8.属性获取
+		关于节点属性怎么获取呢：
+		result = html.xpath('//li/a/@href')
+		这就是获取li节点下的a节点中的href属性
+
+	9.属性多值匹配
+
+	eg：<li class="li li-first"><a href="link.html">first item</a></li>
+		
+	这个时候需要用contains（）函数。第一个参数传入属性名称，第二个参数是属性值
+	因为有多个属性值。但匹配的时候可以用contains来确认只要包含传入的属性值就完成匹配
+		result = html.xpath('//li[contains(@class,"li")]/a/text()')
+
+	10.多属性匹配
+	还有一种情况就是，需要根据多个属性确定一个节点，就意味着要同时匹配多个属性，此时可以用运算符and来连接。
+
+	eg：<li class="li li-first" name="item"><a href="link.html">first item</a></li>
+
+	result = html.xpath('//li[contains(@class,"li") and @name = "item"]/a/text()')
+
+
+	除了and运算符，还有
+	or：或
+	and：与
+	mod：余数
+	|：计算两个节点集   //book|//cd。 返回所有拥有book和cd元素的节点集
+	还有+，-，*，div（除法），=，!=,<,<=,>,>=
+
+	11.按序选择
+		当我们匹配时，有时候很容易匹配到很多节点，但只需要其中的某个节点，如第二个节点，或者最后一个节点。
+	可以使用中括号[]传入索引的方法获取特定次序的节点
+
+	eg：result = html.xpath('//li[2]/a/text()'  注意：这里索引是从1开始的，是几就是几
+
+				li[last()]	最后一个节点
+				li[position()<3]	索引小于三的节点（1和2）
+				li[last()-2]	倒数第三个
+	
+	12.节点轴选择
+	其实和上面那个parent是一样的，需要在后面加上两个冒号,然后再加上限定条件，例如*代表所有。。
+		ancestor::div  div节点这个祖先节点
+		attribute::*	这个轴可以获取所有属性值，加上*就是获取节点的所有属性
+		child::a[@href="link1.html"]		获取所有直接子节点，选去href属性为link1.html的a节点
+		descendant::span	获取所有span的子孙节点
+		following::	获取当前节点之后的所有节点
+		following-sibling::  获取当前节点之后的所有同级节点
+
+		以上都是xpath的简单用法，更多轴的用法：http://www.w3school.com.cn/xpath/xpath_axes.asp
+
+
