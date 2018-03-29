@@ -1,0 +1,117 @@
+Beautiful Soup
+	就是一个python的HTML或XML的解析库，用来方便地从网页中提取数据
+
+	准备工作就是确保安装了beautiful Soup和lxml
+
+
+	1.解析器
+		除了支持python标准库中的HTML解析器外，还支持一些第三方解析器（lxml）
+	用法：
+		from bs4 import BeautifulSoup
+		soup = BeautifulSoup(html,'lxml')
+		创建一个对象，接下来可以调用对象的方法和属性来获取你要的内容
+		并且在你生成了这个对象时，会自动帮你把不完整的html文本修改好
+
+	2.	soup.prettify()		这个方法就是把药解析的字符串以标准的缩进格式输出
+
+		soup.title(节点名).string(输出该节点的文本内容）
+	
+	3.节点选择器
+		直接调用节点的名称就可以选择节点元素，在调用string属性就可以得到节点内的文本。如果单个节点结构层次非常清晰，可以用这种方式来解析
+	
+		当有多个节点时，这种选择方法只会选择到第一个匹配的节点，后面的节点全都会忽略
+		soup.title	这样经过选择的节点，它的类型都是bs4.element.Tag类型
+			Tag类型是Beautiful Soup中的一个重要的数据结构。它具有一些属性，如string
+
+	4.提取信息
+		1.获取名称：soup.title.name(title节点的名称：就是title)
+		2.获取属性：soup.p.attrs	而p节点可能有很多个属性，attrs就是获取所有属性	调用出来获取返回的是字典类型	soup.p.attrs['name']	获取p节点的name属性
+		还可以不用attrs，直接用[]括起来
+		eg：soup.p['name']	对于name属性的值是唯一的。所以返回的是单个字符串
+		soup.p['class']		对于节点元素可能有多个class值，所以返回的是列表
+
+		3.获取内容：soup.p.string
+		4.嵌套选择：就是很多节点都有子节点，就是你可以从外一直调用到里面
+		即：soup.head.title.string	调用head节点里的title节点的文本内容
+		
+		5.关联选择：有时候无法直接选到想要的节点元素，需要先选中一个节点，然后以它为基准在选择它的子节点，父节点，兄弟节点等
+	
+	（1）
+		调用contents属性，获取它的所有直接子节点
+		soup.p.contents		获取p的直接子节点，返回的是list类型
+		调用children属性，和content一样，但是返回结果是一个生成器类型，可以用一个for循环打印
+		for i,child in enumerate(soup.p.children)
+			print(i,child)
+
+		若要调用所有子孙节点，调用descendants属性。她会递归查询所有子节点，返回的也是一个生成器类型。
+
+	（2）
+		parent属性，获取某个节点元素的父节点
+		soup.a.parent
+
+		parents属性，获取某个节点元素的所有祖先节点
+		返回的也是生成器类型，并且这些祖先节点的内部包括这个某节点及其子孙节点都会获取到
+	（3）
+		next_sibling		获取下一个兄弟节点
+		previous_sibling	获取上一个兄弟节点
+
+	
+	
+	5.方法选择器
+
+		上面的选择方法都是通过属性来选择的，非常的快，但是遇到比较复杂的选择的话，他就比较繁琐，不够灵活。
+		
+		beautifulsoup还提供了一套查询方法，调用它们，然后传入相应的参数就可以灵活查询了。
+
+		（1）find_all()		返回所有符合条件的元素，以列表的形式。
+		find_all(name,attrs,recursive,text,**kwargs)	就是调用这些参数
+
+			1.name：根据节点名来查询元素
+			soup.find_all(name='ul')	还可以在最后加索引[0]
+			返回的也是Tag类型，所以还可以进行嵌套查询。
+		for ul in soup.find_all(name='ul'):
+			print(ul.find_all(name='li')
+
+
+			2.attrs:	根据属性来查询
+				soup.fing_all(attrs={'id':'list-1'})	注意要用一个字典类型，这里就是查询id为list-1的节点。得到的结果是列表形式。
+
+			*对于常用的属性，如id，class，我们可以不用attrs来传递。
+			soup.find_all(id='list-1')
+			soup.find_all(class_='element') *因为class在python中是关键字，所以要在后面加一个下划线。
+
+			3.text：这个参数可以用来匹配节点的文本，传入的可以是字符串，也可以是正则表达式对象
+			soup.find_all(text=re.compile('link'))
+
+		(2)find()	返回第一个匹配的元素
+		还有一些和find_all()，find()，类似的
+		find_parents()		返回所有祖先节点
+		find_parent()		返回直接父节点
+		find_next_siblings()	返回后面所有的兄弟节点
+		find_next_sibling()	返回后面第一个兄弟节点
+		find_previous_siblings()	返回前面所有兄弟节点
+		find_previous_sibling()	返回前面第一个兄弟节点
+		find_all_next()		返回节点后所有符合条件的节点
+		find_next()		返回第一个符合条件的节点
+		find_all_previous()	返回节点前所有符合条件的节点
+		find_previous()		返回第一个符合条件的节点
+
+	6.CSS选择器
+		使用css选择器时，只需要调用select()方法，传入相应的css选择器即可
+
+		soup.select('ul li')	选择所有ul节点下面所有的li节点，结果是li节点组成的列表
+		而列表中的元素依然是Tag类型的，所以可以嵌套使用
+
+
+		1.获取属性
+			因为知道节点类型是tag类型，所以还可以用原来的方法获取属性
+		for ul in soup.select('ul'):
+			print(ul['id'])
+			print(ul.attrs['id'])
+
+		2.获取文本
+			也可以用之前的string属性获取文本，或者用get_text()方法
+			for li in soup.select('li'):
+				print(li.get_text())
+				print(li.string)
+
