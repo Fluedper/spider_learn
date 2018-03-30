@@ -1,0 +1,122 @@
+使用 pyquery
+
+
+	1.初始化：
+		和beautifulsoup一样，要传入html 文本来初始化一个pyquery对象。
+
+		文本初始化：
+			from pyquery import PyQuery as pq
+
+			doc = pq(html)
+		
+		url初始化：
+			doc = pq(url='http://www.baidu.com')
+			这个方法就等于 doc = pq(requests.get('http://www.baicu.com').text)
+
+		文本初始化：
+			doc = pq(filename='demo.html')
+
+	2.基本CSS选择器
+		
+实例：
+html = '''
+<div id="container">
+    <ul class="list">
+         <li class="item-0">first item</li>
+         <li class="item-1"><a href="link2.html">second item</a></li>
+         <li class="item-0 active"><a href="link3.html"><span class="bold">third item</span></a></li>
+         <li class="item-1 active"><a href="link4.html">fourth item</a></li>
+         <li class="item-0"><a href="link5.html">fifth item</a></li>
+     </ul>
+ </div>
+'''
+from pyquery import PyQuery as pq
+doc = pq(html)
+print(doc('#container .list li'))	##关于这个.list中的这个点，暂就认为它对应class的id
+#意思是先取id为container的节点，然后在选取其内部的class为list的节点内部的所有li节点，然后打印输出
+print(type(doc('#container .list li')))
+#发现类型是pyquery类型
+运行结果：
+	<li class="item-0">first item</li>
+	<li class="item-1"><a href="link2.html">second item</a></li>
+	<li class="item-0 active"><a href="link3.html"><span class="bold">third item</span></a></li>
+	<li class="item-1 active"><a href="link4.html">fourth item</a></li>
+	<li class="item-0"><a href="link5.html">fifth item</a></li>
+	<class 'pyquery.pyquery.PyQuery'>
+
+	3.查找节点
+		一些常用的查询函数，这些函数与jquery中的函数用法完全相同
+	（1）子节点
+		find（）：此时传入的参数是CSS选择器，它查找的是所有子孙节点
+
+		items = doc（‘.list')		#先选取一个class为list的节点
+		lis = items.find（'li')		#再调用find（）方法，传入一个css选择器，取其内部的li节点。结果的类型都是Pyquery类型
+
+		childern（）：查找所有子节点
+		如果想筛选出子节点中的class为active的节点，可以 lis = items.children('.active')
+
+	（2）父节点
+		parent（）：查找父节点
+		parents（）：查找祖先节点
+		如果想要筛选，也同样传入css选择器就可以了
+
+	（3）兄弟节点
+		siblings（）：查找所有兄弟节点 #同样可以筛选
+
+	4.遍历
+		对于pyquery的选择结果可以是多个的，但是它不像beautifulsoup那样返回列表。
+		所以对于多个节点的结果，我们需要遍历来获取，需要调用items（）方法
+
+		doc = pq(html)
+		lis = doc('li').items()
+		#这时lis已经是一个生成器类型，不用items（）它就还是pyquery类型
+		for li in lis:
+			print(li,type(li))
+			而对于单个的返回的结果还是pyquery类型
+
+	5.获取信息
+		（1）获取属性
+			用attr（）方法或者调用attr属性
+			即a = doc（‘.item-0.active a'）
+			a.attr('href') #返回第一个节点的属性   或 a.attr.href #返回所有a节点的属性
+
+		（2）获取文本
+			用text（）方法获取节点的文本	返回的是所有匹配的节点内部的纯文本，中间用空格分隔开，返回的结果是一个字符串
+			用html（）获取节点内部的html文本	html文本返回的是第一个匹配的节点的内部html文本
+
+	6.节点操作
+		pyquery提供了一系列方法来对节点进行动态修改
+
+		比如为某节点添加一个class，移除某个节点等，这些操作有时候回味提取信息带来极大的便利
+		（1）addClass和removeClass
+			doc = pq(html)
+			li = doc('.item-0.active')	选中li节点
+			li.removeClass('active')	移除li节点中的active这个class
+			li.addClass('active')		再将这个class添加回来
+
+		（2）attr、text、html
+			也可以用这三个方法改变节点内部的内容
+			li.attr('name','link')
+			li.text('changed item')
+			li.html('<span>changed item</span>')
+
+		（3）remove（）：移除某节点
+			在很多时候，text（）提取的是所有节点的文本，而有些节点的文本是你不想要的，你就可以用remove（）方法先剔除掉这些文本
+
+			doc = pq(html)
+			wrap = doc('.wrap')
+			wrap.find('p').remove()	#将class=wrap的节点中的p节点移除
+			print(wrap.text())	
+
+		（4）还有很多节点操作的方法，如：append（），empty（），prepend（）等方法，它们和jquery的用法完全一样，详细用法参考官方文档： http://pyquery.readthedocs.io/en/latest/api.html
+
+	7.伪类选择器
+		css选择题之所以强大，还有一个很重要的原因，那就是它支持多种多样的伪类选择器，例如选择第一个节点，最后一个节点，奇偶数节点，包含某一文本的节点等。
+
+		doc = pq(html)
+		li = doc('li:first-child')	选择第一个li节点
+		li = doc('li:last-child')	选择最后一个li节点
+		li = doc('li:ntn-child(2)')	选择第二个li节点
+		li = doc('li:gt(2)')		选择第三个li之后的li节点
+		li = doc('li:nth-child(2n)')	选择偶数位置的li节点
+
