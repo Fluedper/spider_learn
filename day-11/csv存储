@@ -1,0 +1,55 @@
+CSV文件存储
+
+	CSV，全称是Comma-Separated Values，中文叫作逗号分隔值或字符分隔值，其文件以纯文本的形式储存表格数据。该文件是一个字符序列，可以由任意数目的记录组成，记录间以某种换行符分割。每条记录由字段组成，字段间的分隔符是其他字符或者字符串，最常见的是逗号或制表符。不过所有记录都有完全相同的字段序列。相当于一个结构化表的纯文本形式。
+
+
+	1.写入
+		import csv
+		with open('data.csv','w',encoding='utf-8')as csvfile:
+			writer = csv.writer(csvfile)	调用csv的writer()初始化下入对象
+			writer.writerow(['id','name','age']) #writerow()方法传入每行的数据
+			writer.writerow(['10001','clc','22'])
+			writer.writerow(['10002','hlh','21'])
+			/可以用二维列表写入多行数据
+			writerow([['10001','clc','22'],['10002','hlh','21']])
+
+
+		以文本形式打开data.csv
+		id,name,age
+		10001,clc,22
+		10002,hlh,21
+
+	但是一般情况下，爬虫爬取的都是结构化数据，一般会用字典来表示。在csv库中也提供了字典的写入方式。
+		import csv
+
+		with open('data.csv','w',encoding='utf-8')as csvfile:
+			filenames = ['id','name','age']
+			writer = csv.DictWriter(csvfile,filenames=filenames)
+			writer.writeheader()
+			writer.writerow({'id':'10001','name':'clc','age':22})
+			writer.writerow({'id':'10002','name':'hlh','age':21)}
+		这里先定义三个字段，用filenames表示，然后将其传给DictWriter来初始化一个字典写入对象，接着可以调用write 和header（）方法先写入头信息，然后调用writerow（）方法传入相应字典即可。最终写入的结果完全相同
+
+		
+
+	2.读取
+		import csv
+
+		with open('data.csv','r',encoding='utf-8') as csvfile:
+			reader = csv.reader(csvfile)	我们构造的是Reader对象
+			for row in reader: #通过遍历输出了每行的内容，每行都是一个列表形式
+				print(row)
+
+		返回结果如下
+		['id','name','age']
+		['10001','clc','22']
+		['10002','hlh','21']
+		
+		如果使用pandas，可以利用read_csv()方法将数据从CSV文件中读取出来
+		import pandas as pd
+		
+		df = pd.read_csv('data.csv')
+		print(df)
+		也可以用DataFrame对象的to_csv()方法来将数据写入csv文件
+
+
